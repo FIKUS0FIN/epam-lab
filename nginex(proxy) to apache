@@ -1,0 +1,106 @@
+FROM Ubuntu 16.04
+
+sudo apt-get update
+
+sudo apt-get install
+
+sudo nano /etc/apache2/ports.conf
+
+
+sudo nano /etc/apache2/sites-available/000-default.conf
+
+sudo systemctl reload apache2
+
+$$$  sudo netstat -tlpn  #look 8080
+
+Creating Virtual Hosts for Apache
+
+sudo mkdir -v /var/www/{foobar.net,test.io}
+
+sudo nano /etc/apache2/sites-available/foobar.net.conf
+
+##	<VirtualHost *:8080>
+    ServerName foobar.net
+    ServerAlias www.foobar.net
+    DocumentRoot /var/www/foobar.net
+    <Directory /var/www/foobar.net>
+        AllowOverride All
+    </Directory>
+ </VirtualHost>
+
+
+Check Apache for configuration errors again.
+
+sudo apachectl -t
+sudo systemctl reload apache2
+
+
+$$$  Installing and Configuring Nginx
+
+sudo apt-get install nginx
+
+etc/nginx/sites-enabled/default # deff conf 
+
+sudo mkdir -v /usr/share/nginx/{example.com,sample.org}
+
+sudo nano /etc/nginx/sites-available/example.com
+
+sudo ln -s /etc/nginx/sites-available/example.com /etc/nginx/sites-enabled/example.com
+
+Do an Nginx configuration test:
+
+sudo nginx -t
+
+sudo systemctl reload nginx
+
+Setting Up HTTPS Websites 
+
+sudo mkdir /etc/nginx/ssl
+
+sudo openssl req -x509 -sha256 -newkey rsa:2048 -keyout /etc/nginx/ssl/foobar.net-key.pem -out /etc/nginx/ssl/foobar.net-cert.pem -days 3650 -nodes
+
+###		Country Name (2 letter code) [AU]:US
+State or Province Name (full name) [Some-State]:New York
+Locality Name (eg, city) []:New York City
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:DigitalOcean Inc
+Organizational Unit Name (eg, section) []:
+Common Name (e.g. server FQDN or YOUR name) []:foobar.net
+Email Address []:
+
+
+sudo nano /etc/nginx/sites-available/apache
+
+server {
+    listen 80;
+    listen 443 ssl;
+    server_name test.io www.test.io;
+
+    ssl on;
+    ssl_certificate /etc/nginx/ssl/test.io-cert.pem;
+    ssl_certificate_key /etc/nginx/ssl/test.io-key.pem;
+
+    location / {
+        proxy_pass http://your_server_ip:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+##test 
+
+
+sudo nginx -t
+
+sudo systemctl reload nginx
+
+
+Blocking Direct Access to Apache 
+	
+Since Apache is listening on port 8080 on the public IP address, it is accessible by everyone. It can be blocked by working the following IPtables command into your firewall rule set.
+
+comand 
+
+sudo iptables -I INPUT -p tcp --dport 8080 ! -s your_server_ip -j REJECT --reject-with tcp-reset
+

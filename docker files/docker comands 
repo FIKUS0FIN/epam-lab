@@ -1,0 +1,32 @@
+docker pull ubuntu
+
+docker run ubuntu
+
+docker images -a
+
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+ubuntu              latest              c5f1cf30c96b        7 days ago          120.8 MB
+hello-world         latest              94df4f0ce8a4        2 weeks ago         967 B
+
+
+docker run -it ubuntu
+
+docker ps  #Для просмотра списка активных контейнеров
+
+docker ps -a # allcontainers
+
+docker stop идентификатор-контейнера
+
+docker rmi the_image 
+
+sudo docker build -t="eugeneware/docker-wordpress-nginx"  "image" 
+
+
+To spawn a new instance of wordpress on port 80. The -p 80:80 maps the internal docker port 80 to the outside port 80 of the host machine.
+
+sudo docker run -p 80:80 --name docker-wordpress-nginx -d eugeneware/docker-wordpress-nginx
+
+Start your newly created docker.
+
+sudo docker start docker-wordpress-nginx
+
