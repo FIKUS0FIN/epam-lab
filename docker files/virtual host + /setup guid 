@@ -1,0 +1,68 @@
+sudo apt install docker 
+
+# sudo er user for docker 
+
+ Apache + PHP
+
+mkdir php-apache
+
+cd php-apache
+
+vim Dockerfile
+
+ubuntu:12.04
+
+# Install dependencies
+RUN apt-get update -y
+RUN apt-get install -y git curl apache2 php5 libapache2-mod-php5 php5-mcrypt php5-mysql
+
+# Install app
+RUN rm -rf /var/www/*
+ADD src /var/www
+
+# Configure apache
+RUN a2enmod rewrite
+RUN chown -R www-data:www-data /var/www
+ENV APACHE_RUN_USER www-data
+ENV APACHE_RUN_GROUP www-data
+ENV APACHE_LOG_DIR /var/log/apache2
+
+EXPOSE 80
+
+CMD ["/usr/sbin/apache2", "-D",  "FOREGROUND"]
+
+
+mkdir src
+
+echo "<?php phpinfo();" > src/index.php
+
+docker build -t thiagomarini/apache-php .
+
+docker images
+
+docker ps
+
+docker run -p 80:80 thiagomarini/apache-php
+
+
+Tomcat + Java
+
+docker pull tomcat
+
+docker run -it --rm -p 8888:80 tomcat:8.0
+
+
+docker run -p 80:80 -d  thiagomarini/apache-php
+
+docker run -it -p 8888:90 -d tomcat:8.0
+
+
+docker-gen + Nginx reverse proxy
+
+docker pull jwilder/nginx-proxy
+
+docker run -d -p 80:80 -v /var/run/docker.sock:/tmp/docker.sock jwilder/nginx-proxy
+
+docker run -d -e VIRTUAL_HOST=domain1.com thiagomarini/apache-php
+
+docker run -d -e VIRTUAL_HOST=domain2.com tomcat
